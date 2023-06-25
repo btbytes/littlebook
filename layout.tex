@@ -1,4 +1,4 @@
-% -*- mode: latex; mode: reftex; mode: auto-fill; mode: flyspell; coding: utf-8; tex-command: "pdflatex.sh"; TeX-master: "lbdl.tex" -*-
+% -*- mode: latex; mode: reftex; mode: auto-fill; mode: flyspell; coding: utf-8; -*-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -13,7 +13,7 @@
 \newdateformat{dotdate}{\THEYEAR.\twodigit{\THEMONTH}.\twodigit{\THEDAY}}
 
 \usepackage{imakeidx}
-\makeindex[intoc,columns=1]
+\makeindex[columns=1]
 
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=0pt,itemindent=1em,itemsep=2ex}
@@ -37,6 +37,7 @@
   linkcolor=links,
   urlcolor=links,
   citecolor=links,
+  hypertexnames=false, % to avoid errors with autonum
 ]{hyperref} % PDF meta-information specification
 
 \urlstyle{same}
@@ -55,6 +56,7 @@
 
 \usepackage{xspace}
 \def\wordfig{Figure\xspace}
+\def\wordeq{Equation\xspace}
 \def\wordtable{Table\xspace}
 \def\wordchap{Chapter\xspace}
 
@@ -62,13 +64,21 @@
 \let\oldendcenter\endcenter
 \renewenvironment{center}{\setlength\topsep{0pt}\oldcenter}{\oldendcenter}
 
+\usepackage{environ}
+\NewEnviron{hardcenter}{\makebox[\textwidth][c]{\BODY}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Math
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\setlength{\thinmuskip}{1mu} % by default it is equal to 3 mu
-\setlength{\medmuskip}{1mu} % by default it is equal to 4 mu
-\setlength{\thickmuskip}{3mu} % by default it is equal to 5 mu
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{mleftright}
+
+\setlength{\thinmuskip}{1.5mu} % by default it is equal to 3 mu
+\setlength{\medmuskip}{2mu} % by default it is equal to 4 mu
+\setlength{\thickmuskip}{3.5mu} % by default it is equal to 5 mu
 
 \makeatletter
 \DeclareFontEncoding{LS1}{}{}
@@ -77,6 +87,14 @@
 \makeatother
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\inputgenerated}[1]{%
+  \IfFileExists{#1}{\input{#1}}{%
+    \errmessage{Cannot find "#1", compile with -shell-escape}\stop}%
+}
+
+%\newcommand{\gradient}[2]{{\nabla\!}_{#1 \mid #2}}
+\newcommand{\gradient}[2]{{\nabla\!#1}_{\mid #2}}
 
 \def\given{\,\middle\vert\,}
 \newcommand{\proba}{{P}}
@@ -132,6 +150,9 @@
 %\usepackage{oldgerm}
 \usepackage{relsize}
 
+\usepackage{xfp}
+\newcommand{\adaptedscale}[1]{#1}
+
 %\newcommand{\li}[1]{^{\textgoth{#1}}}
 \newcommand{\li}[1]{^{\scalebox{.5}{\textbf{#1}}}}
 %% \newcommand{\li}[1]{^{\textbf{#1}}}
@@ -164,13 +185,14 @@
 %% \tikzset{
 %% }
 
-\definecolor{paramcolor}{rgb}{0.85,0.85,0.85}
+\definecolor{operatorcolor}{rgb}{0.95,0.95,1.00}
+\definecolor{paramcolor}{rgb}{0.8,0.8,1.0}
 
 \tikzset{
   axes/.style={
     samples=1000,
     %smooth,
-    scale=0.8,
+    %scale=0.8,
   },
 }
 
@@ -185,12 +207,12 @@
 \setlength{\diminfoshift}{70pt}
 
 \tikzset{
-  >={Straight Barb[angle'=80,scale=1.2]},
+  >={Straight Barb[angle'=80,scale=\adaptedscale{1.2}]},
   deepnet/.style={
 %%     background rectangle/.style={fill=paper},
 %%     show background rectangle,
     %every text node part/.style={align=center},
-    rounded corners=0.5pt,
+    %rounded corners=0.5pt,
     curly brace/.style={sharp corners,very thick,decoration={calligraphic brace,amplitude=0.20cm},decorate},
     font=\footnotesize,
     halo/.style={
@@ -199,15 +221,17 @@
         draw=white,line width=2pt,-,%shorten <=1pt,shorten >=1pt,
       },
     },
-    operator/.style={draw=black,inner sep=1pt},
+    operator/.style={draw=black!30,fill=operatorcolor,inner sep=1pt},
     next/.style={above=##1\layergap of \tikzlastnode},
     next/.default={1},
     prev/.style={below=##1\layergap of \tikzlastnode},
     prev/.default={1},
     var/.style={inner sep=2pt},
+    flow/.style={thick},
     layer/.style={operator,minimum width=\layerwidth,minimum height=\layerthickness,text depth=1pt,text height=1.3ex},
-    layer large/.style={layer,minimum height=1.75\layerthickness},
     layer small/.style={layer,minimum width=\layerthickness},
+    layer large/.style={layer,minimum height=1.5\layerthickness},
+    layer very large/.style={layer,minimum height=1.75\layerthickness},
     info line/.style={
       draw=black,line width=0.4pt,dash pattern=on 0.4pt off 2pt,
 %%       draw=black!50,line width=0.2pt,-,
@@ -216,7 +240,7 @@
     block definition/.style={draw=black,inner sep=2\layergap,dash pattern=on 2.5pt off 0.5pt},
     replicated/.style={
       draw=black,
-      inner sep=\layergap, dash pattern=on 2.5pt off 0.35pt,
+      inner sep=\layergap, dash pattern=on 2.5pt off 0.8pt,
       label={[%
           inner sep=2pt,
           anchor=south west,
@@ -226,7 +250,7 @@
     inputs/.style={
       text depth=1.5ex,
       path picture={%
-        \draw[black,very thin]
+        \draw[black]
         ($(path picture bounding box.south west)+(1pt,6pt)$)--($(path picture bounding box.south east)+(-1pt,6pt)$)
         %
         node[midway,yshift=-15.5pt] {\scalebox{.5}{##1}};
@@ -234,6 +258,7 @@
     },
     %
     param/.style={%
+%      draw=paramcolor,
       fill=paramcolor,
 %%       preaction={fill=white},
 %%       pattern color=black!15,
@@ -323,7 +348,7 @@
 }
 
 \newcommand{\amatrix}[7]{%
-  \begin{tikzpicture}[scale=0.2]
+  \begin{tikzpicture}[scale=\adaptedscale{0.2}]
     \ifthenelse{\equal{#7}{}}
                {}
                {\draw[draw=none,fill=#7] (#3,#4) rectangle ++(#5,#6);}
@@ -352,12 +377,20 @@
 
 \usepackage[square]{natbib}
 \bibliographystyle{plainnatmodified}
-
+\nobibintoc
 \newcommand{\biburl}[1]{\href{#1}{pdf}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Layout
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\cftbeforepartskip}{3ex}
+\setlength{\cftbeforechapterskip}{1.0ex}
+\setlength{\cftbeforesectionskip}{0.1ex}
+
+%% \setsecnumdepth{subsection}
+%% \renewcommand{\thesubsection}{\alph{subsection}\,-\hskip -12pt\,}
+%% \setsecnumformat{\csname the#1\endcsname :}
 
 \cftsetindents{part}{0em}{1.8em}
 \cftsetindents{chapter}{0em}{1.8em}
@@ -372,14 +405,21 @@
 \setulmarginsandblock{14pt}{26pt}{*}
 \setheadfoot{14pt}{14pt}
 \setheaderspaces{*}{*}{*}
+%% \setlength{\headsep}{0pt}
+%% \setlength{\headheight}{0pt}
 
-\makepagestyle{littlebook}
-\makeoddhead{littlebook}{}{}{}
-\makeevenhead{littlebook}{}{}{}
+%% \newcommand\ignoreme[1]{}
+%% \setsecheadstyle{\ignoreme}
+
+%% \makepagestyle{littlebook}
+%% \makeoddhead{littlebook}{}{}{}
+%% \makeevenhead{littlebook}{}{}{}
 \newcommand{\myfooter}{\footnotesize {\thepage \hskip 0.8em \raisebox{-2pt}{\vline height 8pt} \hskip 0.4em \thelastpage}}
-\makeoddfoot{littlebook}{}{\myfooter}{}
+%% \makeoddfoot{littlebook}{}{\myfooter}{}
+%% \makeevenfoot{littlebook}{}{\myfooter}{}
 \makeoddfoot{plain}{}{\myfooter}{}
-\pagestyle{littlebook}
+\makeevenfoot{plain}{}{\myfooter}{}
+\pagestyle{plain}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -395,15 +435,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \makechapterstyle{Tufte}{
-\renewcommand{\chapterheadstart}{\null \vskip3.0\onelineskip}
-\renewcommand{\printchaptername}{\large\itshape\chaptername}
+\renewcommand{\chapterheadstart}{\null \vskip1.5\onelineskip}
+\renewcommand{\printchaptername}{\large\sffamily\itshape\chaptername}
 \renewcommand{\printchapternum}{\LARGE\thechapter \\}
 \renewcommand{\afterchapternum}{}
 \renewcommand{\printchaptertitle}[1]{
 \raggedright
 \itshape\Huge{##1}}
 \renewcommand{\afterchaptertitle}{
-\vskip3.5\onelineskip
+\vskip3\onelineskip
 }}
 \chapterstyle{Tufte}
 
@@ -411,11 +451,11 @@
 
 \setsecheadstyle{\sethangfrom{\noindent ##1}\raggedright\sffamily\itshape\Large}
 \setbeforesecskip{-.9\onelineskip}
-\setaftersecskip{.5\onelineskip}
+\setaftersecskip{.75\onelineskip}
 
-\setsubsecheadstyle{\sethangfrom{\noindent  ##1}\raggedright\sffamily\large\itshape}
-\setbeforesubsecskip{-.6\onelineskip}
-\setaftersubsecskip{.5\onelineskip}
+\setsubsecheadstyle{\sethangfrom{\noindent  ##1}\raggedright\sffamily\itshape\large}
+\setbeforesubsecskip{\onelineskip}
+\setaftersubsecskip{.65\onelineskip}
 
 \setsubsubsecheadstyle{\sethangfrom{\noindent ##1}\raggedright\sffamily\itshape}
 \setbeforesubsubsecskip{-.5\onelineskip}
@@ -508,16 +548,36 @@
 \usepackage{xcolor, soul}
 
 \definecolor{hlcolor}{rgb}{1.0,1.0,0.5}
-\definecolor{ulcolor}{rgb}{0.80,0.80,0.80}
 \sethlcolor{hlcolor}
-\setulcolor{ulcolor}
-\newcommand{\keyterm}[2][]{%
-  \BeginAccSupp{method=escape,ActualText={#2}}%
+%% \definecolor{ulcolor}{rgb}{0.65,0.65,0.65}
+%% \setulcolor{ulcolor}
+
+%% \index{Attention Layer@\hypertarget{Attention Layer.ind}{}Attention Layer}
+%% \href{\#Attention Layer.ind}%
+
+%% \newcommand{\keyterm}[2][]{%
+%%   \ifthenelse{\equal{#1}{}}
+%%              {\prettyul[2pt]{#2}\linkedindex{#2}}
+%%              {\prettyul[2pt]{#2}\linkedindex{#1}}%
+%% }
+
+\newcommand{\keytermold}[2][]{%
+%  \BeginAccSupp{method=plain,ActualText={#2}}%
   \ifthenelse{\equal{#1}{}}
              {\prettyul[2pt]{#2}\index{#2}}
              {\prettyul[2pt]{#2}\index{#1}}%
-  \EndAccSupp{}%
+%  \EndAccSupp{}%
 }
+
+\setulcolor{black}
+\setul{0.3ex}{0.5pt}
+\newcommand{\keyterm}[2][]{%
+  \ul{#2}%
+%%   \prettyul[2pt]{#2}%
+  \ifthenelse{\equal{#1}{}}{\index{#2}}{\index{#1}}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand{\gizmo}{%
   \begin{tikzpicture}[scale=0.25]
