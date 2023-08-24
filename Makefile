@@ -1,4 +1,4 @@
-test.pdf: test.tex
+test.pdf: test.tex layout.tex
 	pdflatex $<
 
 .PHONY:
